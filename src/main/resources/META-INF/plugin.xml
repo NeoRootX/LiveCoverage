@@ -1,0 +1,90 @@
+<idea-plugin>
+    <id>org.showen.livecoverageplugin</id>
+    <name>Live Coverage</name>
+    <version>2026.2.0</version>
+    <vendor url="https://github.com/NeoRootX/LiveCoverage" email="wen65181516@gmail.com">Showen</vendor>
+
+    <product-descriptor code="PLIVECOVERAGE"
+                        release-date="20260203"
+                        release-version="20262"/>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+
+    <description><![CDATA[
+        <h1>Live Coverage</h1>
+        <p>An IntelliJ IDEA plugin for real-time code coverage visualization using JaCoCo.</p>
+        <h3>Features</h3>
+        <ul>
+            <li><b>Cumulative Coverage Mode:</b> Continuously highlights all executed code. Use "Clear Coverage" to reset.</li>
+            <li><b>Integrated JaCoCo Agent:</b> The agent JAR is bundled with the plugin - no need to download separately.</li>
+            <li><b>Auto JVM Arguments:</b> JVM arguments are automatically added to run configurations - zero manual setup.</li>
+            <li>Pause/Resume: Temporarily pause or resume highlighting.</li>
+        </ul>
+        <h3>Setup</h3>
+        <p>Configure plugin settings in <code>Settings -> Tools -> Live Coverage</code>:</p>
+        <ul>
+            <li><b>JaCoCo Agent TCP Address:</b> Usually <code>127.0.0.1</code></li>
+            <li><b>JaCoCo Agent TCP Port:</b> Usually <code>6300</code></li>
+            <li><b>Source output path:</b> Absolute path to Java source root</li>
+            <li><b>Classes output path:</b> Absolute path to compiled <code>.class</code> files</li>
+            <li><b>Multi-module support:</b> Add multiple source/classes path pairs</li>
+        </ul>
+        <p>Run your application - JVM arguments are automatically added. No manual configuration needed.</p>
+        <h3>Usage</h3>
+        <ul>
+            <li>Code will be highlighted automatically as it executes (cumulative mode).</li>
+            <li>Use "Clear Coverage" action to reset coverage data and start fresh.</li>
+            <li>Use "Pause/Resume Coverage" when you want to temporarily disable or re-enable live background highlighting.</li>
+        </ul>
+        <h3>Solves Real Business Problems</h3>
+        <ul>
+            <li>Complex and hard-to-maintain legacy business code</li>
+            <li>Impact analysis for incremental development and requirement changes</li>
+            <li>Test-data preparation and bug localization before regression testing</li>
+            <li>Quickly answer: "Which business code paths did this request actually execute?"</li>
+        </ul>
+        <h3>Core Value</h3>
+        <ul>
+            <li><b>Request-to-code path visibility with lower understanding cost:</b> Quickly locate executed code blocks</li>
+            <li><b>Higher regression-testing efficiency:</b> Analyze code and requirement impact using real execution paths, then prepare test data</li>
+            <li><b>Business bug localization:</b> Understand legacy behavior faster and pinpoint failing business code fragments</li>
+        </ul>
+    ]]></description>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="org.showen.livecoverageplugin.PluginStartupActivity"/>
+        <toolWindow id="Request Coverage"
+                    anchor="bottom"
+                    icon="/META-INF/toolWindowIcon.svg"
+                    factoryClass="org.showen.livecoverageplugin.ui.CoverageToolWindowFactory"/>
+        <notificationGroup id="LiveCoveragePlugin.NotificationGroup" displayType="BALLOON"/>
+        <applicationService serviceImplementation="org.showen.livecoverageplugin.settings.LiveCoverageSettings"/>
+        <applicationService serviceImplementation="org.showen.livecoverageplugin.coverage.service.JaCoCoAgentService"/>
+        <applicationConfigurable instance="org.showen.livecoverageplugin.ui.LiveCoverageConfigurable"
+                                 parentId="tools"
+                                 id="org.showen.livecoverageplugin.configurable"
+                                 displayName="Live Coverage"/>
+        <!-- Automatically add JaCoCo agent JVM arguments to run configurations -->
+        <runConfigurationExtension implementation="org.showen.livecoverageplugin.runconfig.LiveCoverageRunConfigurationExtension"/>
+    </extensions>
+
+    <actions>
+        <group id="LiveCoverage.Menu" text="Live Coverage" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action id="LiveCoverage.Refresh" 
+                    class="org.showen.livecoverageplugin.action.RefreshCoverageAction"
+                    text="Refresh Coverage"
+                    description="Manually refresh code coverage data from JaCoCo agent"/>
+            <action id="LiveCoverage.Clear" 
+                    class="org.showen.livecoverageplugin.action.ClearCoverageAction"
+                    text="Clear Coverage"
+                    description="Clear all coverage highlights and data"/>
+            <action id="LiveCoverage.TogglePolling" 
+                    class="org.showen.livecoverageplugin.action.TogglePollingAction"
+                    text="Pause Coverage"
+                    description="Pause or resume automatic coverage polling"/>
+        </group>
+    </actions>
+
+</idea-plugin>
