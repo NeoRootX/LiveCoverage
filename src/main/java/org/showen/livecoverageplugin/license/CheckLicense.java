@@ -5,8 +5,10 @@ import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.ui.LicensingFacade;
@@ -46,6 +48,11 @@ public final class CheckLicense {
     private static final String PRODUCT_CODE = "PLIVECOVERAGE";
     private static final String KEY_PREFIX = "key:";
     private static final String STAMP_PREFIX = "stamp:";
+
+    private static final DataKey<String> REGISTER_PRODUCT_CODE =
+            DataKey.create("register.product-descriptor.code");
+    private static final DataKey<String> REGISTER_MESSAGE =
+            DataKey.create("register.message");
 
     private static final String[] ROOT_CERTIFICATES = new String[]{
             "-----BEGIN CERTIFICATE-----\n" +
@@ -156,7 +163,7 @@ public final class CheckLicense {
             registerAction = actionManager.getAction("Register");
         }
         if (registerAction != null) {
-            ActionUtil.performAction(
+            ActionUtil.performActionDumbAwareWithCallbacks(
                     registerAction,
                     AnActionEvent.createEvent(
                             asDataContext(productCode, message),
@@ -171,11 +178,12 @@ public final class CheckLicense {
 
     @NotNull
     private static DataContext asDataContext(@NotNull String productCode, @Nullable String message) {
-        return dataId -> switch (dataId) {
-            case "register.product-descriptor.code" -> productCode;
-            case "register.message" -> message;
-            default -> null;
-        };
+        SimpleDataContext.Builder builder = SimpleDataContext.builder()
+                .add(REGISTER_PRODUCT_CODE, productCode);
+        if (message != null) {
+            builder.add(REGISTER_MESSAGE, message);
+        }
+        return builder.build();
     }
 
     private static boolean isKeyValid(@NotNull String key) {
